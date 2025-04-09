@@ -1,62 +1,97 @@
 package com.aventstack.extentreports;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
-import com.aventstack.extentreports.view.Ico;
+/**
+ * List of allowed status for {@link com.aventstack.extentreports.model.Log}
+ */
+public enum Status implements Serializable {
+    PASS,
+    FAIL,
+    FATAL,
+    ERROR,
+    WARNING,
+    INFO,
+    DEBUG,
+    SKIP;
 
-import lombok.Getter;
-
-@Getter
-public enum Status {
-    INFO("Info", 10), PASS("Pass", 20), WARNING("Warning", 30), SKIP("Skip", 40), FAIL("Fail", 50);
-
-    private final Integer level;
-    private final String name;
-
-    Status(String name, Integer level) {
-        this.name = name;
-        this.level = level;
+    private static List<Status> statusHierarchy = Arrays.asList(
+            Status.FATAL,
+            Status.FAIL,
+            Status.ERROR,
+            Status.WARNING,
+            Status.SKIP,
+            Status.PASS,
+            Status.INFO,
+            Status.DEBUG
+    );
+    
+    /**
+     * Returns the hierarchical list of status, in the below order:
+     * 
+     * <ul>
+     * 	<li>FATAL</li>
+     * 	<li>FAIL</li>
+     * 	<li>ERROR</li>
+     * 	<li>WARNING</li>
+     * 	<li>SKIP</li>
+     * 	<li>PASS</li>
+     *  <li>DEBUG</li>
+     * 	<li>INFO</li>
+     * </ul>
+     * 
+     * @return Hierarchical list of status
+     */
+    public static List<Status> getStatusHierarchy() {
+        return statusHierarchy;
     }
-
-    public static List<Status> getResolvedHierarchy(List<Status> status) {
-        List<Status> list = new ArrayList<>(status);
-        resolveHierarchy(list);
-        return list;
+    
+    public static Status getHighestStatus(List<Status> statusList) {
+    	Status highestStatus = Status.PASS;
+    	if (statusList == null || statusList.isEmpty()) {
+    		return highestStatus;
+    	}
+    	for (Status status : statusList) {
+    		highestStatus = Status.getStatusHierarchy().indexOf(status) < Status.getStatusHierarchy().indexOf(highestStatus) 
+    				? status
+					: highestStatus;
+    	}
+    	return highestStatus;
     }
-
-    private static void resolveHierarchy(List<Status> status) {
-        status.sort(Comparator.comparing(Status::getLevel));
+    
+    static void setStatusHierarchy(List<Status> statusHierarchy) {
+        Status.statusHierarchy = statusHierarchy;
     }
-
-    public static Status max(Collection<Status> status) {
-        return status.stream().max(Comparator.comparing(Status::getLevel)).orElse(PASS);
+    
+    static void resetStatusHierarchy() {
+        List<Status> statusHierarchy = Arrays.asList(
+                Status.FATAL,
+                Status.FAIL,
+                Status.ERROR,
+                Status.WARNING,
+                Status.SKIP,
+                Status.PASS,
+                Status.INFO,
+                Status.DEBUG
+        );
+        
+        setStatusHierarchy(statusHierarchy);
     }
-
-    public static Status max(Status s1, Status s2) {
-        return s1.getLevel() > s2.getLevel() ? s1 : s2;
-    }
-
-    public static Status min(Collection<Status> status) {
-        return status.stream().min(Comparator.comparing(Status::getLevel)).orElse(PASS);
-    }
-
-    public static String i(String status) {
-        return Ico.ico(status).toString();
-    }
-
-    public static String i(Status status) {
-        return Ico.ico(status.toString()).toString();
-    }
-
-    public String toLower() {
-        return name.toLowerCase();
-    }
-
+    
     @Override
     public String toString() {
-        return name;
+        switch (this) {
+            case PASS: return "pass";
+            case FAIL: return "fail";
+            case FATAL: return "fatal";
+            case ERROR: return "error";
+            case WARNING: return "warning";
+            case INFO: return "info";
+            case DEBUG: return "debug";
+            case SKIP: return "skip";
+            default: return "unknown";
+        }
     }
 }

@@ -1,68 +1,42 @@
 package com.aventstack.extentreports.markuputils;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.gson.Gson;
-
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
-
-@Getter
-@Builder
-@AllArgsConstructor
-@ToString
-class CodeBlock extends MarkupTemplate implements Markup {
-
-    private static final long serialVersionUID = -5532095355983830164L;
+class CodeBlock implements Markup {
+    
     private static final AtomicInteger id = new AtomicInteger(0);
-    private static final String CODEBLOCK_TEMPLATE = "codeblock.ftl";
-    private static final String CODEBLOCK_JSON_TEMPLATE = "codeblock.json.ftl";
-    private static Template codeblock;
-    private static Template codeblockJson;
-    private String[] codeArray;
-    private CodeLanguage lang;
-    private Object jsonObject;
 
-    static {
-        try {
-            codeblock = ft.createTemplate(CODEBLOCK_TEMPLATE);
-            codeblockJson = ft.createTemplate(CODEBLOCK_JSON_TEMPLATE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private String code;
+    private CodeLanguage lang;
+    
+    public void setCodeBlock(String code) {
+        this.code = code;
+    }
+    public String getCodeBlock() {
+        return code;
     }
 
+    public void setCodeBlock(String code, CodeLanguage lang) {
+        this.code = code;
+        this.lang = lang;
+    }
+    
     @Override
     public String getMarkup() {
-        if (jsonObject == null && codeArray == null)
-            return "";
-        if (jsonObject != null)
-            codeArray = new String[]{new Gson().toJson(jsonObject)};
-        
-        int index = 0;
-        Template t = codeblock;
         if (lang == CodeLanguage.JSON) {
-            index = id.getAndIncrement();
-            t = codeblockJson;
+            int index = id.getAndIncrement();
+            String markup = "<div class='json-tree' id='code-block-json-" + index + "'></div>" +
+            "<script>" +
+                "function jsonTreeCreate" + index + "() { document.getElementById('code-block-json-" + index + "').innerHTML = JSONTree.create(" + code + "); }" +
+                "jsonTreeCreate" + index + "();" +
+            "</script>";
+            return markup;
         }
-        Map<String, Object> map = new HashMap<>();
-        map.put("code", codeArray);
-        map.put("index", index);
-        try {
-            return ft.getSource(t, map);
-        } catch (TemplateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+
+        String lhs = "<textarea disabled class='code-block'>";
+        String rhs = "</textarea>";
+        
+        return lhs + code + rhs;
     }
 
 }

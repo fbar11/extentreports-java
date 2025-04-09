@@ -1,18 +1,12 @@
 package com.aventstack.extentreports.model;
 
-import java.io.Serializable;
+public class Author 
+	extends TestAttribute {
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+    private static final long serialVersionUID = 5358337504569462439L;
 
-@Getter
-@Setter
-@ToString(callSuper = true, includeFieldNames = true)
-public final class Author extends NamedAttribute implements Serializable, BaseEntity {
-    private static final long serialVersionUID = -1589597649718748057L;
-
-    public Author(String name) {
-        super(name);
+    public Author(String k) {
+        super(k);
     }
+    
 }

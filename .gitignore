@@ -31,13 +31,3 @@ hs_err_pid*
 target/
 test-output/
 *.iml
-
-# nexus
-deploycmd.txt
-
-# Intellij
-.idea/
-
-# 
-pom.nexus.xml
-*.DS_Store
